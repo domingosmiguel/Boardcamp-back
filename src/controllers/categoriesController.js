@@ -15,14 +15,14 @@ export const categoriesGet = async (req, res) => {
 };
 
 export const categoriesPost = async (req, res) => {
-  const { name } = req.body;
+  const name = req.body.name.toLowerCase();
   if (!name) return res.sendStatus(serverAnswers.badRequest.code);
   try {
     const { rowCount: inserted } = await connection.query(
       `INSERT INTO ${categoriesTable} (name)
       SELECT ($1)
       WHERE NOT EXISTS
-      (SELECT name FROM categories WHERE name=($1));`,
+      (SELECT name FROM ${categoriesTable} WHERE name LIKE ($1));`,
       [name]
     );
     if (inserted === 0) return res.sendStatus(serverAnswers.conflict.code);
