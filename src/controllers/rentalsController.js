@@ -6,17 +6,19 @@ const customersTable = collections.customers;
 const gamesTable = collections.games;
 
 export const rentalsGet = async (req, res) => {
-  const { customerId, gameId } = req.params;
+  const { customerId, gameId } = req.query;
   try {
     let rentals;
-    if (customerId || gameId) {
+    if (customerId) {
       const objQueryTxt = {
-        customerId: ' WHERE "customerId"=($1)',
+        customerId: ' ',
         gameId: ' WHERE "gameId"=($2)',
       };
-      const result = customerId ? 'customerId' : 'gameId';
-      const selectText = `SELECT * FROM ${rentalsTable}${objQueryTxt[result]}`;
-      rentals = await connection.query(selectText, [customerId, gameId]);
+      const selectText = `SELECT * FROM ${rentalsTable} WHERE "customerId"=($1)`;
+      rentals = await connection.query(selectText, [customerId]);
+    } else if (gameId) {
+      const selectText = `SELECT * FROM ${rentalsTable} WHERE "gameId"=($1)`;
+      rentals = await connection.query(selectText, [gameId]);
     } else {
       rentals = await connection.query(`SELECT * FROM ${rentalsTable}`);
     }
