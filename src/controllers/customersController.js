@@ -16,15 +16,13 @@ export const customersGet = async (req, res) => {
   }
 };
 export const customersGetById = async (req, res) => {
-  const id = req.params;
-
+  const { id } = req.params;
   try {
     const customers = await connection.query(
       `SELECT * FROM ${customersTable} WHERE id=($1)`,
       [id]
     );
-
-    return res.send(customers.rows);
+    return res.send(customers.rows[0]);
   } catch (error) {
     return res.sendStatus(serverAnswers.databaseProblem.code);
   }

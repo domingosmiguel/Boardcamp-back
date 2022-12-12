@@ -4,6 +4,7 @@ import express from 'express';
 import categoriesRoutes from './routes/categoriesRoutes.js';
 import costumersRoutes from './routes/customersRoutes.js';
 import gamesRoutes from './routes/gamesRoutes.js';
+import rentalsRoutes from './routes/rentalsRoutes.js';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ server.use(cors());
 server.use(categoriesRoutes);
 server.use(gamesRoutes);
 server.use(costumersRoutes);
+server.use(rentalsRoutes);
 
 const port = process.env.PORT || 4000;
 
