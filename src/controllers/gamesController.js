@@ -2,12 +2,15 @@ import { collections, serverAnswers } from '../assets/const.js';
 import connection from '../database/db.js';
 
 const gamesTable = collections.games;
+const categoriesTable = collections.categories;
 
 export const gamesGet = async (req, res) => {
   const name = `%${req.query.name ?? ''}%`;
   try {
     const games = await connection.query(
-      `SELECT * FROM ${gamesTable} WHERE name LIKE ($1)`,
+      `SELECT ${gamesTable}.*, ${categoriesTable}.name AS "categoryName" FROM ${gamesTable} 
+         JOIN ${categoriesTable} ON ${gamesTable}."categoryId"=${categoriesTable}."id"
+        WHERE ${gamesTable}.name LIKE ($1)`,
       [name]
     );
     return res.send(games.rows);
