@@ -44,24 +44,24 @@ export const customersPost = async (req, res) => {
   }
 };
 export const customersPut = async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   const { name, phone, cpf, birthday } = res.locals;
 
   try {
-    const customers = await connection.query(
+    const { rowCount: inserted } = await connection.query(
       `UPDATE ${customersTable} SET name=($2), phone=($3), cpf=($4), birthday=($5) 
         WHERE id=($1) 
-          AND 
-            (id IN
-            (SELECT id FROM ${customersTable} WHERE cpf='($4)')
-            OR NOT EXISTS
-            (SELECT id FROM ${customersTable} WHERE cpf='($4)')
-            )        
-      `,
+        AND
+          (id IN
+          (SELECT id FROM ${customersTable} WHERE cpf=($4))
+          OR NOT EXISTS
+          (SELECT id FROM ${customersTable} WHERE cpf=($4))
+          )
+        `,
       [id, name, phone, cpf, birthday]
     );
-
-    return res.send(customers.rows);
+    if (inserted === 0) return res.sendStatus(serverAnswers.conflict.code);
+    return res.sendStatus(serverAnswers.success.code);
   } catch (error) {
     return res.sendStatus(serverAnswers.databaseProblem.code);
   }
