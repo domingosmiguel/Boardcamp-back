@@ -1,49 +1,23 @@
 import { collections, serverAnswers } from '../assets/const.js';
 import connection from '../database/db.js';
+import { rentalsGetQueries } from '../queries/rentalsQueries.js';
 
 const rentalsTable = collections.rentals;
-const customersTable = collections.customers;
-const gamesTable = collections.games;
 
 export const rentalsGet = async (req, res) => {
   const { customerId, gameId } = req.query;
   try {
     let rentals;
     if (customerId) {
-      const objQueryTxt = {
-        customerId: ' ',
-        gameId: ' WHERE "gameId"=($2)',
-      };
-      const selectText = `SELECT * FROM ${rentalsTable} WHERE "customerId"=($1)`;
-      rentals = await connection.query(selectText, [customerId]);
+      rentals = await connection.query(rentalsGetQueries.customerFilter, [
+        customerId,
+      ]);
     } else if (gameId) {
-      const selectText = `SELECT * FROM ${rentalsTable} WHERE "gameId"=($1)`;
-      rentals = await connection.query(selectText, [gameId]);
+      rentals = await connection.query(rentalsGetQueries.gameFilter, [gameId]);
     } else {
-      rentals = await connection.query(`SELECT * FROM ${rentalsTable}`);
+      rentals = await connection.query(rentalsGetQueries.noFilter);
     }
-    let fullRentals = rentals.rows.map(async (rental) => {
-      const fullRental = rental;
-      try {
-        const customer = await connection.query(
-          `SELECT * FROM ${customersTable} WHERE id=($1) LIMIT 1`,
-          [rental.customerId]
-        );
-        const game = await connection.query(
-          `SELECT * FROM ${gamesTable} WHERE id=($1) LIMIT 1`,
-          [rental.gameId]
-        );
-        fullRental.customer = customer.rows[0];
-        fullRental.game = game.rows[0];
-      } catch (error) {
-        console.log(error);
-      } finally {
-        // eslint-disable-next-line no-unsafe-finally
-        return fullRental;
-      }
-    });
-    fullRentals = await Promise.all(fullRentals);
-    return res.send(fullRentals);
+    return res.send(rentals.rows);
   } catch (error) {
     return res.sendStatus(serverAnswers.databaseProblem.code);
   }
@@ -84,7 +58,7 @@ export const rentalsPostReturn = async (req, res) => {
 
     const updateText = `UPDATE ${rentalsTable} 
                            SET "returnDate"=($1), "delayFee"=($2) 
-                           WHERE id=($3)`;
+                         WHERE id=($3)`;
     const { rowCount: inserted } = await connection.query(updateText, [
       d,
       delayFee,
