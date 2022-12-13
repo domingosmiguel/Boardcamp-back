@@ -9,7 +9,7 @@ export const gamesGet = async (req, res) => {
   try {
     const games = await connection.query(
       `SELECT ${gamesTable}.*, ${categoriesTable}.name AS "categoryName" FROM ${gamesTable} 
-         JOIN ${categoriesTable} ON ${gamesTable}."categoryId"=${categoriesTable}."id"
+         JOIN ${categoriesTable} ON ${gamesTable}."categoryId"=${categoriesTable}.id
         WHERE ${gamesTable}.name LIKE ($1)`,
       [name]
     );
